@@ -33,16 +33,16 @@ window.__CODE_EXTENSION_LOADED__ = true;
 // 負向前瞻：確保後面不接著數字或連字符（防止匹配 FC2-PPV-3100012 中的 PPV-31000）
 // 負向回顾：確保前面不是多段式番號的一部分（如 FC2-PPV-）
 // 移除結尾 \b，讓後面接字母或中文字時也能匹配（如 IPZZ-798RINOA）
-const BANGO_REGEX = /(?<![A-Za-z]\d{0,3}[-－])\b([A-Za-z]{2,8})[-－](\d{2,5})(?!\d|[-－][A-Za-z])/g;
+const CODE_REGEX = /(?<![A-Za-z]\d{0,3}[-－])\b([A-Za-z]{2,8})[-－](\d{2,5})(?!\d|[-－][A-Za-z])/g;
 
 // 無連字符格式正則：匹配合併格式（如 NYKD54）
 // 某些網站會移除連字符，需要額外識別並自動補上
 // 範例：NYKD54 → 標準化為 NYKD-54
-const BANGO_NOHYPHEN_REGEX = /\b([A-Za-z]{2,8})(\d{2,5})(?!\d)/g;
+const CODE_NOHYPHEN_REGEX = /\b([A-Za-z]{2,8})(\d{2,5})(?!\d)/g;
 
 // 預編譯正則表達式（避免重複創建，提升效能）
-const PRECOMPILED_REGEX = new RegExp(BANGO_REGEX.source, 'gi');
-const PRECOMPILED_REGEX_NO_HYPHEN = new RegExp(BANGO_NOHYPHEN_REGEX.source, 'gi');
+const PRECOMPILED_REGEX = new RegExp(CODE_REGEX.source, 'gi');
+const PRECOMPILED_REGEX_NO_HYPHEN = new RegExp(CODE_NOHYPHEN_REGEX.source, 'gi');
 const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA', 'INPUT', 'SELECT', 'OPTION', 'CODE', 'PRE', 'IFRAME', 'HEAD', 'svg', 'math']);
 
 // ========== 已知發行商白名單（避免標記網名/航班號）==========
@@ -130,7 +130,7 @@ const isKnownStudio = (codeId) => {
 
 const TOOLTIP_WIDTH = 240;
 const TOOLTIP_HEIGHT = 280;
-const MAX_BANGO_TAGS = 200; // 每頁最大番號標記數量（效能與體驗平衡）
+const MAX_CODE_TAGS = 200; // 每頁最大番號標記數量（效能與體驗平衡）
 
 // ========== 狀態 ==========
 let isEnabled = true;
@@ -164,11 +164,11 @@ const escapeHtml = (str) => {
 };
 
 // 驗證番號格式
-const validateBangoId = (id) => {
+const validateCodeId = (id) => {
   if (!id || typeof id !== 'string') return false;
   // 更嚴格的番號格式驗證
-  const bangoPattern = /^[A-Za-z]{2,8}[-－]?\d{2,5}$/;
-  return bangoPattern.test(id.trim());
+  const codePattern = /^[A-Za-z]{2,8}[-－]?\d{2,5}$/;
+  return codePattern.test(id.trim());
 };
 
 // 驗證文本長度
@@ -210,7 +210,7 @@ function showTooltip(codeId, x, y, pageTitle = null) {
   if (!isHoverEnabled) return;
   
   // 驗證輸入
-  if (!validateBangoId(codeId)) return;
+  if (!validateCodeId(codeId)) return;
   
   const tip = getTooltip();
   currentCode = codeId;
@@ -283,7 +283,7 @@ function showTooltip(codeId, x, y, pageTitle = null) {
   debugLog('[Code] 查詢番號:', codeId);
   
   try {
-    chrome.runtime.sendMessage({ type: 'FETCH_BANGO', id: codeId }, (res) => {
+    chrome.runtime.sendMessage({ type: 'FETCH_CODE', id: codeId }, (res) => {
       // 檢查回調錯誤
       if (chrome.runtime.lastError) {
         const errorMsg = chrome.runtime.lastError.message || '';
@@ -476,7 +476,7 @@ async function batchQueryCodeDatabase() {
   debugLog('[Code] 開始批量查詢，待查詢數量:', pendingCodeQueue.length);
   
   // 去重：相同番號只查詢一次
-  const uniqueBangos = [...new Set(pendingCodeQueue.map(item => item.codeId))];
+  const uniqueCodes = [...new Set(pendingCodeQueue.map(item => item.codeId))];
   pendingCodeQueue = []; // 清空隊列
   
   // 檢查擴展上下文是否有效
@@ -497,8 +497,8 @@ async function batchQueryCodeDatabase() {
   const chunkSize = 8;
   const chunkDelayMs = 50;
   const chunks = [];
-  for (let i = 0; i < uniqueBangos.length; i += chunkSize) {
-    chunks.push(uniqueBangos.slice(i, i + chunkSize));
+  for (let i = 0; i < uniqueCodes.length; i += chunkSize) {
+    chunks.push(uniqueCodes.slice(i, i + chunkSize));
   }
 
   const results = [];
@@ -547,8 +547,8 @@ async function batchQueryCodeDatabase() {
     }
   }
   
-  const failedCount = uniqueBangos.length - verifiedCount;
-  debugLog('[Code] 批量查詢完成，總計:', uniqueBangos.length, '成功:', verifiedCount, '失敗:', failedCount);
+  const failedCount = uniqueCodes.length - verifiedCount;
+  debugLog('[Code] 批量查詢完成，總計:', uniqueCodes.length, '成功:', verifiedCount, '失敗:', failedCount);
   
   // 觸發重新掃描來標記已驗證的番號
   if (verifiedCount > 0) {
@@ -585,7 +585,7 @@ function applyVerifiedCodeTags() {
   
   // 批次處理文本節點
   for (const textNode of textNodes) {
-    wrapBangoVerifiedOnly(textNode);
+    wrapCodeVerifiedOnly(textNode);
   }
   
   // 處理 sup 格式
@@ -903,7 +903,7 @@ function wrapSupCode(parentEl) {
  */
 function applySupCodeVerified(parentEl) {
   // 限制檢查
-  if (codeTagCount >= MAX_BANGO_TAGS) return;
+  if (codeTagCount >= MAX_CODE_TAGS) return;
   
   const children = Array.from(parentEl.childNodes);
   for (let i = 0; i < children.length - 1; i++) {
@@ -961,7 +961,7 @@ function applySupCodeVerified(parentEl) {
     codeTagCount++;
     i++;
     
-    if (codeTagCount >= MAX_BANGO_TAGS) break;
+    if (codeTagCount >= MAX_CODE_TAGS) break;
   }
 }
 
@@ -1047,10 +1047,10 @@ function wrapCode(textNode) {
 }
 
 /**
- * wrapBangoVerifiedOnly: 第二階段 - 只標記已驗證的番號
+ * wrapCodeVerifiedOnly: 第二階段 - 只標記已驗證的番號
  * 只標記已在 verifiedCodeSet 中的番號
  */
-function wrapBangoVerifiedOnly(textNode) {
+function wrapCodeVerifiedOnly(textNode) {
   // 節點有效性檢查
   const parent = textNode.parentNode;
   if (!parent || parent.nodeType !== Node.ELEMENT_NODE) return;
@@ -1058,7 +1058,7 @@ function wrapBangoVerifiedOnly(textNode) {
   if (parent.isContentEditable || parent.closest?.('[contenteditable="true"]')) return;
   
   // 限制檢查
-  if (codeTagCount >= MAX_BANGO_TAGS) return;
+  if (codeTagCount >= MAX_CODE_TAGS) return;
 
   const text = textNode.textContent;
 
@@ -1151,7 +1151,7 @@ function wrapBangoVerifiedOnly(textNode) {
 // 迭代器掃描，先收集再處理（避免 DOM 修改影響迭代）
 function scanNode(node) {
   // 限制檢查：超過最大標記數量則停止掃描
-  if (codeTagCount >= MAX_BANGO_TAGS) {
+  if (codeTagCount >= MAX_CODE_TAGS) {
     return;
   }
   
@@ -1191,7 +1191,7 @@ function scanNode(node) {
   // 再批次處理（避免迭代中修改 DOM 導致節點被跳過）
   for (const tn of textNodes) {
     // 限制檢查：超過最大標記數量則停止處理
-    if (codeTagCount >= MAX_BANGO_TAGS) {
+    if (codeTagCount >= MAX_CODE_TAGS) {
       break;
     }
     wrapCode(tn);
