@@ -22,14 +22,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://javdb.com/*",
-        "https://www.javdb.com/*",
-        "https://javbus.com/*",
-        "https://www.javbus.com/*",
-        "https://javlibrary.com/*",
-        "https://www.javlibrary.com/*",
-        "https://mgstage.com/*",
-        "https://www.mgstage.com/*"
+        "<all_urls>"
       ],
       "js": ["utils.js", "content.js"],
       "css": ["styles.css"],
