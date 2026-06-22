@@ -137,14 +137,14 @@ let isEnabled = true;
 let isHoverEnabled = true;
 let isScanning = false;
 let tooltip = null;
-let currentBango = null;
+let currentCode = null;
 let currentPageTitle = null; // 從網頁提取的片名
 let mutationObserver = null;
 let codeTagCount = 0; // 當前頁面已標記番號計數器
 
 // 批量查詢相關狀態
-let pendingBangoQueue = []; // 待查詢番號隊列
-let verifiedBangoSet = new Set(); // 已驗證存在的番號集合
+let pendingCodeQueue = []; // 待查詢番號隊列
+let verifiedCodeSet = new Set(); // 已驗證存在的番號集合
 let isQuerying = false; // 是否正在查詢中
 
 // 調試模式（生產環境設為 false）
@@ -213,7 +213,7 @@ function showTooltip(codeId, x, y, pageTitle = null) {
   if (!validateBangoId(codeId)) return;
   
   const tip = getTooltip();
-  currentBango = codeId;
+  currentCode = codeId;
   currentPageTitle = validateTextLength(pageTitle);
 
   // 即時顯示載入狀態 - 使用安全 DOM 操作
@@ -292,7 +292,7 @@ function showTooltip(codeId, x, y, pageTitle = null) {
         return;
       }
       
-      if (currentBango !== codeId) return; // 已切換到其他番號
+      if (currentCode !== codeId) return; // 已切換到其他番號
       if (!tip.classList.contains('visible')) return;
 
       debugLog('[Code] 獲取結果:', res);
@@ -460,7 +460,7 @@ function renderError(tip, codeId) {
 }
 
 function hideTooltip() {
-  currentBango = null;
+  currentCode = null;
   tooltip?.classList.remove('visible');
 }
 
@@ -470,14 +470,14 @@ function hideTooltip() {
  * 只有存在的番號才會被標記變色
  */
 async function batchQueryCodeDatabase() {
-  if (isQuerying || pendingBangoQueue.length === 0) return;
+  if (isQuerying || pendingCodeQueue.length === 0) return;
   
   isQuerying = true;
-  debugLog('[Code] 開始批量查詢，待查詢數量:', pendingBangoQueue.length);
+  debugLog('[Code] 開始批量查詢，待查詢數量:', pendingCodeQueue.length);
   
   // 去重：相同番號只查詢一次
-  const uniqueBangos = [...new Set(pendingBangoQueue.map(item => item.codeId))];
-  pendingBangoQueue = []; // 清空隊列
+  const uniqueBangos = [...new Set(pendingCodeQueue.map(item => item.codeId))];
+  pendingCodeQueue = []; // 清空隊列
   
   // 檢查擴展上下文是否有效
   let isExtensionValid = false;
@@ -539,7 +539,7 @@ async function batchQueryCodeDatabase() {
   let verifiedCount = 0;
   for (const result of results) {
     if (result.hasTitle) {
-      verifiedBangoSet.add(result.codeId.toUpperCase());
+      verifiedCodeSet.add(result.codeId.toUpperCase());
       verifiedCount++;
       debugLog('[Code] 番號有片名:', result.codeId, '-', result.title);
     } else {
@@ -558,7 +558,7 @@ async function batchQueryCodeDatabase() {
   isQuerying = false;
   
   // 若掃描過程中又有新番號進入隊列，繼續處理
-  if (pendingBangoQueue.length > 0) {
+  if (pendingCodeQueue.length > 0) {
     batchQueryCodeDatabase().catch(err => {
       debugLog('[Code] 批量查詢續跑失敗:', err);
     });
@@ -567,10 +567,10 @@ async function batchQueryCodeDatabase() {
 
 /**
  * 應用已驗證的番號標記
- * 掃描頁面中所有符合格式的番號，但只標記已在 verifiedBangoSet 中的
+ * 掃描頁面中所有符合格式的番號，但只標記已在 verifiedCodeSet 中的
  */
 function applyVerifiedCodeTags() {
-  debugLog('[Code] 應用已驗證番號標記，數量:', verifiedBangoSet.size);
+  debugLog('[Code] 應用已驗證番號標記，數量:', verifiedCodeSet.size);
   
   // 使用 TreeWalker 遍歷所有文本節點
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
@@ -882,9 +882,9 @@ function wrapSupCode(parentEl) {
     const upperCodeId = codeId.toUpperCase();
     
     // 只添加尚未驗證且不在隊列中的番號
-    if (!verifiedBangoSet.has(upperCodeId) && 
-        !pendingBangoQueue.some(item => item.codeId === upperCodeId)) {
-      pendingBangoQueue.push({
+    if (!verifiedCodeSet.has(upperCodeId) && 
+        !pendingCodeQueue.some(item => item.codeId === upperCodeId)) {
+      pendingCodeQueue.push({
         codeId: upperCodeId,
         textNode: textNode,
         nextNode: nextNode,
@@ -929,7 +929,7 @@ function applySupCodeVerified(parentEl) {
     const codeId = `${prefix}-${suffix}`.toUpperCase();
     
     // 只處理已驗證的番號
-    if (!verifiedBangoSet.has(codeId)) {
+    if (!verifiedCodeSet.has(codeId)) {
       i++;
       continue;
     }
@@ -984,7 +984,7 @@ function applySupCodeVerified(parentEl) {
  */
 /**
  * wrapCode: 第一階段 - 收集番號到待查詢隊列
- * 不再立即標記，而是將發現的番號加入 pendingBangoQueue
+ * 不再立即標記，而是將發現的番號加入 pendingCodeQueue
  */
 function wrapCode(textNode) {
   // 節點有效性檢查：確保節點仍在 DOM 中且未被其他操作修改
@@ -1034,9 +1034,9 @@ function wrapCode(textNode) {
     
     // 只添加尚未驗證且不在隊列中的番號
     const upperCodeId = codeId.toUpperCase();
-    if (!verifiedBangoSet.has(upperCodeId) && 
-        !pendingBangoQueue.some(item => item.codeId === upperCodeId)) {
-      pendingBangoQueue.push({
+    if (!verifiedCodeSet.has(upperCodeId) && 
+        !pendingCodeQueue.some(item => item.codeId === upperCodeId)) {
+      pendingCodeQueue.push({
         codeId: upperCodeId,
         textNode: textNode,
         match: match,
@@ -1048,7 +1048,7 @@ function wrapCode(textNode) {
 
 /**
  * wrapBangoVerifiedOnly: 第二階段 - 只標記已驗證的番號
- * 只標記已在 verifiedBangoSet 中的番號
+ * 只標記已在 verifiedCodeSet 中的番號
  */
 function wrapBangoVerifiedOnly(textNode) {
   // 節點有效性檢查
@@ -1091,7 +1091,7 @@ function wrapBangoVerifiedOnly(textNode) {
     const [full, rawPrefix, suffix] = match;
     const prefix = rawPrefix.toUpperCase();
     const codeId = `${prefix}-${suffix}`.toUpperCase();
-    return verifiedBangoSet.has(codeId);
+    return verifiedCodeSet.has(codeId);
   });
   
   if (verifiedMatches.length === 0) return;
@@ -1212,7 +1212,7 @@ document.addEventListener('mouseover', (e) => {
 
   const codeId = target.dataset.code;
   const pageTitle = target.dataset.title; // 從網頁提取的片名
-  if (currentBango === codeId) return;
+  if (currentCode === codeId) return;
 
   showTooltip(codeId, e.clientX, e.clientY, pageTitle);
 }, { passive: true });
@@ -1366,7 +1366,7 @@ function processScanQueue() {
   mutationObserver?.observe(document.body, { childList: true, subtree: true });
   
   // 掃描後若有新番號，觸發批量查詢
-  if (pendingBangoQueue.length > 0) {
+  if (pendingCodeQueue.length > 0) {
     batchQueryCodeDatabase().catch(err => {
       debugLog('[Code] 批量查詢失敗:', err);
     });
@@ -1475,9 +1475,9 @@ function init() {
         // 延遲重新掃描：處理慢載入或動態渲染的內容
         delayedRescanTimeout = setTimeout(() => {
           if (!isEnabled) return;
-          debugLog('[Code] 執行延遲重新掃描，待查詢:', pendingBangoQueue.length, '已驗證:', verifiedBangoSet.size);
+          debugLog('[Code] 執行延遲重新掃描，待查詢:', pendingCodeQueue.length, '已驗證:', verifiedCodeSet.size);
           scanWithLock(document.body);
-          if (pendingBangoQueue.length > 0) {
+          if (pendingCodeQueue.length > 0) {
             batchQueryCodeDatabase().catch(err => {
               debugLog('[Code] 延遲批量查詢失敗:', err);
             });
@@ -1543,9 +1543,9 @@ function init() {
       // Fallback 也加入延遲重新掃描
       delayedRescanTimeout = setTimeout(() => {
         if (!isEnabled) return;
-        debugLog('[Code] Fallback 延遲重新掃描，待查詢:', pendingBangoQueue.length, '已驗證:', verifiedBangoSet.size);
+        debugLog('[Code] Fallback 延遲重新掃描，待查詢:', pendingCodeQueue.length, '已驗證:', verifiedCodeSet.size);
         scanWithLock(document.body);
-        if (pendingBangoQueue.length > 0) {
+        if (pendingCodeQueue.length > 0) {
           batchQueryCodeDatabase().catch(err => {
             debugLog('[Code] Fallback 延遲批量查詢失敗:', err);
           });
