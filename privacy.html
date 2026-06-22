@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>番號大師 — 隱私政策</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #111;
+      color: #ddd;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.8;
+      padding: 40px 20px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #FFD700;
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 32px;
+    }
+    h2 {
+      color: #FFD700;
+      font-size: 15px;
+      margin: 28px 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #222;
+    }
+    p { margin-bottom: 10px; font-size: 14px; color: #ccc; }
+    ul { margin: 8px 0 10px 20px; }
+    ul li { font-size: 14px; color: #ccc; margin-bottom: 4px; }
+    .badge {
+      display: inline-block;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 12px;
+      color: #888;
+      margin-right: 6px;
+    }
+    footer {
+      margin-top: 48px;
+      font-size: 12px;
+      color: #444;
+      text-align: center;
+      padding-top: 16px;
+      border-top: 1px solid #1a1a1a;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🔒 番號大師 隱私政策</h1>
+  <p class="subtitle">最後更新：2026 年 6 月 22 日 &nbsp;·&nbsp; 版本 1.0.0</p>
+
+  <h2>1. 概述</h2>
+  <p>番號大師（以下簡稱「本擴充功能」）是一款 Chrome 擴充功能，用於自動識別特定成人影片資訊網站中的番號，並顯示對應的片名、女優、發行商等詳細資訊。</p>
+  <p>我們承諾：本擴充功能<strong>不收集、不傳送、不出售任何使用者個人資料</strong>。</p>
+
+  <h2>2. 資料存取範圍</h2>
+  <p>本擴充功能僅在以下網站執行內容腳本：</p>
+  <ul>
+    <li><span class="badge">host</span> javdb.com</li>
+    <li><span class="badge">host</span> javbus.com / www.javbus.com</li>
+    <li><span class="badge">host</span> javlibrary.com / www.javlibrary.com</li>
+    <li><span class="badge">host</span> mgstage.com / www.mgstage.com</li>
+  </ul>
+  <p>本擴充功能<strong>不會</strong>在其他網站讀取任何網頁內容。</p>
+
+  <h2>3. 本地快取</h2>
+  <p>為提升查詢速度，本擴充功能會將以下資料儲存在 Chrome 本地儲存空間（<code>chrome.storage.local</code>）：</p>
+  <ul>
+    <li>番號查詢結果（片名、女優、發行商、封面圖片 Base64）</li>
+    <li>使用者偏好設定（啟用/停用番號偵測、Hover 查詢）</li>
+  </ul>
+  <p>上述資料<strong>僅存放在您的裝置本地</strong>，不會上傳至任何伺服器。快取有效期為 3 天，超過上限會自動刪除最舊的紀錄。您也可以隨時透過擴充功能彈出視窗手動清除。</p>
+
+  <h2>4. 外部網路請求</h2>
+  <p>當您懸停於標記的番號時，本擴充功能的 Service Worker 會向以下網站發送 HTTP 請求以取得番號資訊：</p>
+  <ul>
+    <li>javdb.com</li>
+    <li>javbus.com</li>
+    <li>javlibrary.com</li>
+    <li>mgstage.com</li>
+  </ul>
+  <p>這些請求僅包含番號字串，<strong>不包含任何個人識別資訊</strong>。</p>
+
+  <h2>5. 申請的權限</h2>
+  <ul>
+    <li><span class="badge">storage</span> 用於本地儲存快取與偏好設定</li>
+    <li><span class="badge">host_permissions</span> 用於向上述番號資訊網站發送查詢請求</li>
+  </ul>
+  <p>本擴充功能遵循最小權限原則，不申請任何非必要權限。</p>
+
+  <h2>6. 第三方服務</h2>
+  <p>本擴充功能在查詢番號時會存取第三方網站（JAVDB、JAVBUS 等），使用者的請求將受到這些網站各自的隱私政策約束。本擴充功能對第三方網站的行為不負任何責任。</p>
+
+  <h2>7. 未成年人保護</h2>
+  <p>本擴充功能涉及成人內容，<strong>嚴禁未滿 18 歲（或依據當地法律規定之法定年齡）之人士使用</strong>。</p>
+
+  <h2>8. 免責聲明</h2>
+  <p>本工具僅供學習與技術研究使用。使用者須自行遵守相關網站之服務條款及當地適用之法律法規。開發者對使用本擴充功能所產生的任何後果不承擔責任。</p>
+
+  <h2>9. 政策變更</h2>
+  <p>若本隱私政策有任何重大變更，將更新本頁面的「最後更新」日期並於新版本說明中告知。</p>
+
+  <h2>10. 聯絡方式</h2>
+  <p>如有任何隱私相關疑問，請透過 Chrome Web Store 的「聯絡開發者」功能聯繫我們。</p>
+
+  <footer>
+    番號大師 v1.0.0 &nbsp;·&nbsp; 本政策適用於 Chrome Web Store 發布版本
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>番號大師</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 260px;
+      background: #111;
+      color: #f0f0f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding: 16px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #222;
+    }
+
+    .header-icon {
+      width: 32px;
+      height: 32px;
+      background: #000;
+      border: 1px solid #333;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .header-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #FFD700;
+      letter-spacing: 1px;
+    }
+
+    .header-sub {
+      font-size: 11px;
+      color: #555;
+    }
+
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .toggle-label {
+      font-size: 13px;
+      color: #ccc;
+    }
+
+    .toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #333;
+      border-radius: 11px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+
+    .toggle input:checked + .toggle-slider {
+      background: #FFD700;
+    }
+
+    .toggle input:checked + .toggle-slider::before {
+      transform: translateX(18px);
+    }
+
+    .tagline {
+      font-size: 11px;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #1a1a1a;
+      font-style: italic;
+    }
+
+    .divider {
+      height: 1px;
+      background: #222;
+      margin: 12px 0;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 8px 12px;
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #ccc;
+      font-size: 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s;
+      margin-bottom: 6px;
+    }
+
+    .btn:hover {
+      background: #2a2a2a;
+      color: #fff;
+    }
+
+    .btn-danger {
+      border-color: #ef4444;
+      color: #ef4444;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .status-msg {
+      font-size: 11px;
+      color: #22c55e;
+      text-align: center;
+      min-height: 16px;
+      margin-top: 6px;
+    }
+
+    .footer {
+      margin-top: 12px;
+      font-size: 10px;
+      color: #444;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-icon">🎬</div>
+    <div>
+      <div class="header-title">番號大師</div>
+      <div class="header-sub">Hover 查看 · 片名 / 發行商 / 女優</div>
+    </div>
+  </div>
+
+  <div class="tagline">番號看得懂的人，自然會知道這個小工具的用途。</div>
+
+  <div class="toggle-row">
+    <span class="toggle-label">啟用番號偵測</span>
+    <label class="toggle">
+      <input type="checkbox" id="toggle-enabled" checked>
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+
+  <div class="toggle-row">
+    <span class="toggle-label">Hover 自動查詢</span>
+    <label class="toggle">
+      <input type="checkbox" id="toggle-hover" checked>
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+
+  <div class="divider"></div>
+
+  <button class="btn btn-danger" id="btn-clear-cache">🗑 清除查詢快取</button>
+
+  <div class="status-msg" id="status-msg"></div>
+
+  <div class="footer">v1.0.0 · 資料來源：JAVDB / JAVBUS / MGStage</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

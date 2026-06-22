@@ -1,0 +1,271 @@
+﻿/* 番號大師 - 重構版樣式 */
+
+/* ========== 番號標籤 ========== */
+.code-tag {
+  background: #000;
+  font-weight: bold;
+  font-family: 'Microsoft JhengHei', '微軟正黑體', 'Heiti TC', sans-serif;
+  padding: 2px 0;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  font-size: 1em;
+  cursor: pointer;
+  display: inline-flex;
+  text-shadow: none;
+  transition: transform 0.1s, box-shadow 0.1s;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.code-tag:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 165, 0, 0.5);
+}
+
+/* 番號標籤上下飄浮動畫（尊重減少動作偏好） */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.code-tag {
+  animation: float 2s ease-in-out infinite;
+}
+
+/* 減少動作偏好：禁用動畫提高可訪問性 */
+@media (prefers-reduced-motion: reduce) {
+  .code-tag {
+    animation: none;
+  }
+}
+
+/* 前綴：白字黑底 */
+.code-prefix {
+  color: #fff;
+  background: #000;
+  padding: 2px 2px 2px 6px;
+  border-radius: 4px 0 0 4px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* 後綴：黑字黃底 */
+.code-suffix {
+  color: #000;
+  background: #ffa500;
+  padding: 2px 6px 2px 2px;
+  border-radius: 0 4px 4px 0;
+  display: inline-flex;
+  align-items: center;
+}
+
+.code-tag.copied {
+  animation: copiedPulse 0.8s ease;
+}
+
+@keyframes copiedPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; background: #ffa500; }
+}
+
+/* ========== Tooltip 容器 ========== */
+.code-tooltip {
+  position: fixed;
+  z-index: 2147483647;
+  background: #1a1a1a;
+  border: 1px solid #444;
+  border-radius: 12px;
+  padding: 12px;
+  width: 240px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+  pointer-events: auto;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  font-family: 'Microsoft JhengHei', '微軟正黑體', 'Heiti TC', sans-serif;
+}
+
+.code-tooltip.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ========== Tooltip 內部結構 ========== */
+.code-tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #333;
+}
+
+.code-tooltip-id {
+  color: #FFD700;
+  font-weight: bold;
+  font-size: 16px;
+  letter-spacing: 1px;
+  font-family: 'Microsoft JhengHei', '微軟正黑體', 'Heiti TC', sans-serif;
+}
+
+/* 片名樣式 - 與發行商、女優同級 */
+.code-tooltip-title {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #e0e0e0;
+  margin-bottom: 8px;
+  word-break: break-all;
+}
+
+.code-tooltip-source {
+  font-size: 10px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ========== 封面 ========== */
+.code-tooltip-cover {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #333;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.code-tooltip-cover-placeholder {
+  width: 100%;
+  height: 150px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #2a2a2a, #333);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+/* ========== 載入狀態 ========== */
+.code-tooltip-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 0;
+  color: #888;
+  font-size: 12px;
+}
+
+.code-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #333;
+  border-top-color: #FFD700;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ========== 資訊表格（Grid 對齊）========== */
+.code-tooltip-table {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 6px 8px;
+}
+
+.code-tooltip-row {
+  display: contents;
+}
+
+.code-tooltip-label {
+  color: #666;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  grid-column: 1;
+}
+
+.code-tooltip-value {
+  color: #e0e0e0;
+  font-size: 12px;
+  grid-column: 2;
+  line-height: 1.4;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+/* ========== 錯誤狀態 ========== */
+.code-tooltip-error {
+  text-align: center;
+  padding: 16px 0;
+  color: #888;
+}
+
+.code-tooltip-error > div:first-child {
+  color: #ef4444;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+/* ========== 連結 ========== */
+.code-tooltip-link {
+  display: block;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #252525;
+  border: 1px solid #444;
+  border-radius: 6px;
+  color: #FFD700;
+  text-decoration: none;
+  font-size: 12px;
+  text-align: center;
+  transition: all 0.15s;
+}
+
+.code-tooltip-link:hover {
+  background: #2a2a2a;
+  border-color: #FFD700;
+}
+
+/* ========== 網路搜索回填標記（淡黃色）========== */
+.code-tooltip-searched {
+  background: #2a2a1a !important;
+  border-color: #b8a030 !important;
+}
+
+.code-tooltip-searched .code-tooltip-header {
+  background: #3a3a25;
+  border-bottom-color: #b8a030;
+}
+
+.code-tooltip-searched .code-tooltip-id {
+  color: #e8d060;
+}
+
+.code-tooltip-searched .code-tooltip-source {
+  color: #b8a030;
+  font-size: 10px;
+}
+
+.code-tooltip-searched-value {
+  color: #e8d060 !important;
+  font-weight: 500;
+}
+
+/* 淡黃色高亮動畫 */
+@keyframes searched-highlight {
+  0% { background: #2a2a1a; }
+  50% { background: #3a3a2a; }
+  100% { background: #2a2a1a; }
+}
+
+.code-tooltip-searched.animating {
+  animation: searched-highlight 0.5s ease-in-out;
+}

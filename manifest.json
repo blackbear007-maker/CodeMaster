@@ -1,0 +1,57 @@
+{
+  "manifest_version": 3,
+  "name": "番號大師",
+  "version": "1.0.0",
+  "description": "番號看得懂的人，自然會知道這個小工具的用途。",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://javdb.com/*",
+    "https://www.javdb.com/*",
+    "https://javbus.com/*",
+    "https://www.javbus.com/*",
+    "https://javlibrary.com/*",
+    "https://www.javlibrary.com/*",
+    "https://mgstage.com/*",
+    "https://www.mgstage.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://javdb.com/*",
+        "https://www.javdb.com/*",
+        "https://javbus.com/*",
+        "https://www.javbus.com/*",
+        "https://javlibrary.com/*",
+        "https://www.javlibrary.com/*",
+        "https://mgstage.com/*",
+        "https://www.mgstage.com/*"
+      ],
+      "js": ["utils.js", "content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "番號大師",
+    "default_icon": {
+      "16": "icons/icon-code-16.png",
+      "48": "icons/icon-code-48.png",
+      "128": "icons/icon-code.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-code-16.png",
+    "48": "icons/icon-code-48.png",
+    "128": "icons/icon-code.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "homepage_url": "https://github.com/devin-tw/code-master"
+}
