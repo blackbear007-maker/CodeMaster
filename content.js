@@ -343,21 +343,23 @@ function renderTooltip(tip, data) {
     isSearched: data.isSearched
   });
   
-  // 準備數據 - 優先使用從網頁提取的片名
+  // 準備數據 - 片名優先用資料庫的 data.title（currentPageTitle 是頁面 title，不可靠）
   const id = escapeHtml(data.id || '未知');
-  const rawTitle = (currentPageTitle || data.title || '未知').replace(/^[A-Za-z]{2,8}-\d{2,5}\s*[:：]?\s*/, '');
+  const rawTitle = (data.title || '未知').replace(/^[A-Za-z]{2,8}-\d{2,5}\s*[:：]?\s*/, '');
   const title = escapeHtml(rawTitle || '未知');
   const studio = escapeHtml(data.studio || '未知');
   
   // 判斷是否為網路搜索回填的數據
   const isSearched = data.isSearched || data.source === 'web-search';
   let isPageFallback = false;
-  let actors = data.actors?.length 
-    ? data.actors.map(escapeHtml).join('、') 
+  // 過濾掉與片名相同的 actor（防止解析錯誤把片名塞入 actors）
+  const cleanActors = (data.actors || []).filter(a => a && a !== data.title && a.length < 40);
+  let actors = cleanActors.length 
+    ? cleanActors.map(escapeHtml).join('、') 
     : (isSearched ? '搜尋中...' : '未知');
 
   // 資料庫沒有女優名時，綜合片名與 DOM 四個來源判定最佳女優名
-  if (!data.actors?.length && actors !== '搜尋中...') {
+  if (!cleanActors.length && actors !== '搜尋中...') {
     const pageActors = resolveBestActorName(currentPageTitle, data.actors);
     if (pageActors) {
       actors = escapeHtml(pageActors);
