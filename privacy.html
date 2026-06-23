@@ -58,21 +58,28 @@
 <body>
 
   <h1>🔒 番號大師 隱私政策</h1>
-  <p class="subtitle">最後更新：2026 年 6 月 22 日 &nbsp;·&nbsp; 版本 1.0.0</p>
+  <p class="subtitle">最後更新：2026 年 6 月 23 日 &nbsp;·&nbsp; 版本 1.1.0</p>
 
   <h2>1. 概述</h2>
   <p>番號大師（以下簡稱「本擴充功能」）是一款 Chrome 擴充功能，用於自動識別特定成人影片資訊網站中的番號，並顯示對應的片名、女優、發行商等詳細資訊。</p>
   <p>我們承諾：本擴充功能<strong>不收集、不傳送、不出售任何使用者個人資料</strong>。</p>
 
   <h2>2. 資料存取範圍</h2>
-  <p>本擴充功能僅在以下網站執行內容腳本：</p>
+  <p>本擴充功能會在<strong>所有網站</strong>執行內容腳本，以自動偵測頁面文字中出現的番號（如 SSIS-001、IPX-123），並將其標記顯示。這是核心功能所必需，因為番號可能出現在任何網站（論壇、社群媒體、搜尋結果等）。</p>
+  <p>內容腳本僅執行以下操作：</p>
   <ul>
-    <li><span class="badge">host</span> javdb.com</li>
+    <li>掃描頁面純文字節點，比對符合番號格式的字串</li>
+    <li>將符合的番號文字加上視覺標記（黃色高亮）</li>
+    <li>使用者滑鼠懸停時向番號資訊網站查詢詳細資料</li>
+  </ul>
+  <p>內容腳本<strong>不讀取、不傳送任何網頁內容、表單資料或個人資訊</strong>至任何伺服器。</p>
+  <p>番號資訊查詢僅向以下網站發送請求（透過 Service Worker）：</p>
+  <ul>
+    <li><span class="badge">host</span> javdb.com / www.javdb.com</li>
     <li><span class="badge">host</span> javbus.com / www.javbus.com</li>
     <li><span class="badge">host</span> javlibrary.com / www.javlibrary.com</li>
     <li><span class="badge">host</span> mgstage.com / www.mgstage.com</li>
   </ul>
-  <p>本擴充功能<strong>不會</strong>在其他網站讀取任何網頁內容。</p>
 
   <h2>3. 本地快取</h2>
   <p>為提升查詢速度，本擴充功能會將以下資料儲存在 Chrome 本地儲存空間（<code>chrome.storage.local</code>）：</p>
@@ -115,7 +122,7 @@
   <p>如有任何隱私相關疑問，請透過 Chrome Web Store 的「聯絡開發者」功能聯繫我們。</p>
 
   <footer>
-    番號大師 v1.0.0 &nbsp;·&nbsp; 本政策適用於 Chrome Web Store 發布版本
+    番號大師 v1.1.0 &nbsp;·&nbsp; 本政策適用於 Chrome Web Store 發布版本
   </footer>
 
 </body>

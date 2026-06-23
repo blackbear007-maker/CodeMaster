@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "番號大師",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "番號看得懂的人，自然會知道這個小工具的用途。",
   "permissions": [
     "storage"
