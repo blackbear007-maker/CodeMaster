@@ -1,4 +1,4 @@
-﻿// 番號大師 - Popup Script
+﻿// 番號達人 - Popup Script
 (function() {
 
 const toggleEnabled = document.getElementById('toggle-enabled');

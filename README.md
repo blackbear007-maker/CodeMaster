@@ -1,8 +1,8 @@
-# 番號大師 Chrome 擴充功能
+﻿# 番號達人 Chrome 擴充功能
 
 ## 📋 專案概述
 
-番號大師是一個 Chrome 擴充功能，能夠自動識別網頁中的番號並提供詳細資訊查詢功能。支援多個資料來源，包括 JAVDB、JAVBus 和 JAVLibrary。
+番號達人是一個 Chrome 擴充功能，能夠自動識別網頁中的番號並提供詳細資訊查詢功能。支援多個資料來源，包括 JAVDB、JAVBus 和 JAVLibrary。
 
 ## ✨ 主要功能
 

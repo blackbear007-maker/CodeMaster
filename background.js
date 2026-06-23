@@ -1,4 +1,4 @@
-﻿// 番號大師 - Service Worker (Background Script)
+﻿// 番號達人 - Service Worker (Background Script)
 // 功能：處理番號查詢請求，聚合多數據源，管理本地快取
 //
 // 架構說明：
