@@ -518,8 +518,13 @@ async function batchQueryCodeDatabase() {
               resolve({ codeId, hasTitle: false });
               return;
             }
-            // 只有 success 為 true 且有片名（title）才算有效
-            const hasTitle = res?.success === true && res?.data?.title && res.data.title !== '未知' && res.data.title !== '';
+            // success 為 true 且有片名、發行商、女優名任一項即視為有效番號
+            const d = res?.data;
+            const hasTitle = res?.success === true && d && (
+              (d.title && d.title !== '未知' && d.title !== '') ||
+              (d.studio && d.studio !== '未知' && d.studio !== '') ||
+              (d.actors && d.actors.length > 0)
+            );
             if (res?.success === false) {
               if (res?.error) {
                 debugLog('[Code] CHECK_EXISTS 回傳失敗:', codeId, res.error);
