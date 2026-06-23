@@ -345,7 +345,8 @@ function renderTooltip(tip, data) {
   
   // 準備數據 - 片名優先用資料庫的 data.title（currentPageTitle 是頁面 title，不可靠）
   const id = escapeHtml(data.id || '未知');
-  const rawTitle = (data.title || '未知').replace(/^[A-Za-z]{2,8}-\d{2,5}\s*[:：]?\s*/, '');
+  const stripped = (data.title || '').replace(/^[A-Za-z]{2,8}[-－]?\d{2,5}\s*[:：]?\s*/, '').trim();
+  const rawTitle = stripped || (data.title && !/^[A-Za-z]{2,8}[-－]?\d{0,5}$/.test(data.title.trim()) ? data.title : '');
   const title = escapeHtml(rawTitle || '未知');
   const studio = escapeHtml(data.studio || '未知');
   
