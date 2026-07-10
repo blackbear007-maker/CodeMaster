@@ -2,7 +2,17 @@
 
 ## 📋 專案概述
 
-番號達人是一個 Chrome 擴充功能，能夠自動識別網頁中的番號並提供詳細資訊查詢功能。支援多個資料來源，包括 JAVDB、JAVBus 和 JAVLibrary。
+番號達人是一個 Chrome 擴充功能，能夠自動識別網頁中的番號並提供詳細資訊查詢功能。支援多個資料來源，查詢優先級如下：
+
+| 順序 | 資料來源 | 特色 |
+|------|----------|------|
+| 1 | JAVLibrary | 中文資料最準確 |
+| 2 | JAVDB | 中文補充 |
+| 3 | JAVBus | 備援 |
+| 4 | MGStage | 日本官方 |
+| 5 | 3xplanet | 日文片名、女優、片商 |
+| 6 | JAV Database | 完整英文資料 |
+| 7 | JavMost | 英文最後備援 |
 
 ## ✨ 主要功能
 
@@ -25,7 +35,7 @@
 ### 安全特性
 - ✅ XSS 防護：使用 `textContent` 替代 `innerHTML`
 - ✅ 輸入驗證：嚴格的番號格式驗證
-- ✅ 權限最小化：Content Script 僅注入 JAVDB / JAVBUS / JAVLibrary / MGStage 等目標網站
+- ✅ 權限最小化：僅申請必要的 host_permissions，所有來源均為 HTTPS
 - ✅ 錯誤處理：統一的錯誤處理機制
 - ✅ 記憶體管理：防止記憶體洩漏的快取策略
 - ✅ 隱私政策：詳見 [privacy.html](privacy.html)
@@ -73,6 +83,13 @@
 - 記憶體洩漏防護
 
 ## 🐛 問題修復記錄
+
+### v1.2.0 新增資料來源（2026-06-23）
+- ✅ 新增 javbooks.com host_permissions（頁面番號標記支援）
+- ✅ 新增 fetchJavmost()：英文片名、女優、片商（javmost.ws）
+- ✅ 新增 fetchJavdatabase()：完整英文資料（javdatabase.com）
+- ✅ 新增 fetchThreexplanet()：日文片名、女優、片商（3xplanet.com）
+- ✅ 查詢優先級優化：7 層備援確保最高覆蓋率
 
 ### v1.0.1 上架前合規修正（2026-06-22）
 - ✅ 新增 privacy.html 隱私政策頁面（Chrome Web Store 上架必要）

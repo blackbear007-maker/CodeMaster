@@ -34,6 +34,7 @@ auto-test.bat
 AUDIT_COMPLETE.md
 AUDIT_REPORT.md
 FINAL_AUDIT.md
+SECURITY_AUDIT.md
 icons/generate-icons.js
 icons/generate.html
 icons/icon.svg

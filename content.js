@@ -479,8 +479,16 @@ async function batchQueryCodeDatabase() {
   debugLog('[Code] 開始批量查詢，待查詢數量:', pendingCodeQueue.length);
   
   // 去重：相同番號只查詢一次
-  const uniqueCodes = [...new Set(pendingCodeQueue.map(item => item.codeId))];
+  let uniqueCodes = [...new Set(pendingCodeQueue.map(item => item.codeId))];
   pendingCodeQueue = []; // 清空隊列
+
+  // 安全性：限制單批查詢數量，避免惡意頁面塞入大量番號字串
+  // 觸發海量對外請求（速率限制 / DoS 防護）。
+  const MAX_CODES_PER_BATCH = 50;
+  if (uniqueCodes.length > MAX_CODES_PER_BATCH) {
+    debugLog('[Code] 番號數量超過上限，截斷至', MAX_CODES_PER_BATCH, '筆');
+    uniqueCodes = uniqueCodes.slice(0, MAX_CODES_PER_BATCH);
+  }
   
   // 檢查擴展上下文是否有效
   let isExtensionValid = false;

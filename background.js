@@ -840,7 +840,10 @@ async function fetchJavlibrary(id) {
 
 function getBrowserFetchOptions(referer) {
   return {
-    credentials: 'include',
+    // 安全性：不攜帶使用者在第三方站台的登入 Cookie，避免任意頁面
+    // 藉由埋入番號字串來強迫瀏覽器發出「帶登入態」的跨站請求（去匿名化風險）。
+    // 番號基本資訊可匿名查詢，故不需要 credentials。
+    credentials: 'omit',
     headers: {
       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
       'Accept-Language': 'zh-TW,zh;q=0.9,en;q=0.8,ja;q=0.7',
@@ -1485,7 +1488,53 @@ async function fetchCodeInfo(id) {
         debugLog('[Code] 嘗試 MGStage (日本):', normalizedId);
         result = await fetchMgstage(normalizedId);
       }
-      
+
+      if (!result) {
+        debugLog('[Code] 嘗試 3xplanet 備援:', normalizedId);
+        result = await fetchThreexplanet(normalizedId);
+      } else if (!result.title || result.actors.length === 0) {
+        debugLog('[Code] 嘗試 3xplanet 補充缺失欄位:', normalizedId);
+        const txpResult = await fetchThreexplanet(normalizedId);
+        if (txpResult) {
+          if (!result.title && txpResult.title) result.title = txpResult.title;
+          if (result.actors.length === 0 && txpResult.actors.length > 0) result.actors = txpResult.actors;
+          if (!result.studio && txpResult.studio) result.studio = txpResult.studio;
+          if (!result.cover && txpResult.cover) result.cover = txpResult.cover;
+          result.source = result.source + '+3xplanet';
+        }
+      }
+
+      if (!result) {
+        debugLog('[Code] 嘗試 JavDatabase 備援:', normalizedId);
+        result = await fetchJavdatabase(normalizedId);
+      } else if (!result.title || result.actors.length === 0) {
+        debugLog('[Code] 嘗試 JavDatabase 補充缺失欄位:', normalizedId);
+        const jdbResult = await fetchJavdatabase(normalizedId);
+        if (jdbResult) {
+          if (!result.title && jdbResult.title) result.title = jdbResult.title;
+          if (result.actors.length === 0 && jdbResult.actors.length > 0) result.actors = jdbResult.actors;
+          if (!result.studio && jdbResult.studio) result.studio = jdbResult.studio;
+          if (!result.cover && jdbResult.cover) result.cover = jdbResult.cover;
+          result.source = result.source + '+javdatabase';
+        }
+      }
+
+      if (!result) {
+        debugLog('[Code] 嘗試 JavMost 備援:', normalizedId);
+        result = await fetchJavmost(normalizedId);
+      } else if (!result.title || result.actors.length === 0) {
+        // 已有結果但缺少片名或女優，嘗試用 JavMost 補充
+        debugLog('[Code] 嘗試 JavMost 補充缺失欄位:', normalizedId);
+        const javmostResult = await fetchJavmost(normalizedId);
+        if (javmostResult) {
+          if (!result.title && javmostResult.title) result.title = javmostResult.title;
+          if (result.actors.length === 0 && javmostResult.actors.length > 0) result.actors = javmostResult.actors;
+          if (!result.studio && javmostResult.studio) result.studio = javmostResult.studio;
+          if (!result.cover && javmostResult.cover) result.cover = javmostResult.cover;
+          result.source = result.source + '+javmost';
+        }
+      }
+
       if (result) {
         debugLog('[Code] 最終數據源:', result.source, '封面:', result.cover ? '有' : '無', '女優:', result.actors.length);
         
@@ -1620,6 +1669,256 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
   return false;
 });
+
+// ========== 3xplanet 數據源 ==========
+async function fetchThreexplanet(id) {
+  try {
+    const upperId = id.toUpperCase();
+    debugLog('[3xplanet] 請求:', upperId);
+
+    const res = await fetchWithTimeout(
+      `https://3xplanet.com/${encodeURIComponent(upperId)}/`,
+      getBrowserFetchOptions('https://3xplanet.com/')
+    );
+    if (!res.ok) return null;
+
+    const html = await res.text();
+    debugLog('[3xplanet] HTML 長度:', html.length);
+
+    // 確認頁面有此番號
+    if (!html.includes(upperId) && !html.toLowerCase().includes(upperId.toLowerCase())) {
+      debugLog('[3xplanet] 頁面不含番號，跳過');
+      return null;
+    }
+
+    // 提取封面
+    const cover = extractCover(html, [
+      /<meta[^>]+property="og:image"[^>]+content="([^"]+)"/i,
+      /<img[^>]+src="([^"]+)"[^>]*class="[^"]*wp-post-image/i,
+      /<img[^>]+src="([^"]+\.jpg[^"]*)"[^>]*class="[^"]*attachment/i
+    ]);
+
+    // 提取日文片名（h1 或 og:title，去掉女優名尾巴）
+    let title = null;
+    const ogTitle = html.match(/<meta[^>]+property="og:title"[^>]+content="([^"]+)"/i);
+    const h1Match = html.match(/<h1[^>]*class="[^"]*entry-title[^"]*"[^>]*>([^<]+)<\/h1>/i) ||
+                    html.match(/<h1[^>]*>([^<]{10,})<\/h1>/i);
+    const raw = ogTitle?.[1] || h1Match?.[1];
+    if (raw) {
+      title = raw
+        .replace(/\s*[-|]\s*3xplanet.*$/i, '')
+        .replace(/\s*[-|]\s*Japanese Adult.*$/i, '')
+        .trim();
+    }
+
+    // 提取日文女優（出演者: 欄位）
+    const actors = [];
+    const actorMatch = html.match(/出演者[：:]\s*([^\n<]+)/);
+    if (actorMatch?.[1]) {
+      actorMatch[1].split(/[\s　]+/).forEach(name => {
+        name = name.trim();
+        if (name && name.length > 1 && !actors.includes(name)) actors.push(name);
+      });
+    }
+    // 備用：從 Starring: 欄位取英文名
+    if (actors.length === 0) {
+      const starringMatch = html.match(/Starring:\s*([^\n<]+)/i);
+      if (starringMatch?.[1]) {
+        starringMatch[1].split(/,\s*/).forEach(name => {
+          name = name.trim();
+          if (name && name.length > 1 && !actors.includes(name)) actors.push(name);
+        });
+      }
+    }
+
+    // 提取日文片商（メーカー: 欄位）
+    let studio = null;
+    const makerMatch = html.match(/メーカー[：:]\s*([^\n<]+)/) ||
+                       html.match(/Studio:\s*([^\n<,\[]+)/i);
+    if (makerMatch?.[1]) {
+      studio = makerMatch[1].trim();
+    }
+
+    debugLog('[3xplanet] 提取結果:', { id: upperId, title, cover: cover?.substring(0, 50), actors, studio });
+
+    if (!title && !actors.length && !studio) return null;
+
+    return { id: upperId, title, cover, actors, studio, source: '3xplanet' };
+  } catch (e) {
+    if (isTimeoutError(e)) {
+      console.warn('[3xplanet] 請求超時:', id);
+    } else {
+      console.error('[3xplanet] fetch error:', e.message);
+    }
+    return null;
+  }
+}
+
+// ========== JAV Database 數據源 ==========
+async function fetchJavdatabase(id) {
+  try {
+    const upperId = id.toUpperCase();
+    const lowerId = id.toLowerCase();
+    debugLog('[JavDatabase] 請求:', upperId);
+
+    const res = await fetchWithTimeout(
+      `https://www.javdatabase.com/movies/${encodeURIComponent(lowerId)}/`,
+      getBrowserFetchOptions('https://www.javdatabase.com/')
+    );
+    if (!res.ok) return null;
+
+    const html = await res.text();
+    debugLog('[JavDatabase] HTML 長度:', html.length);
+
+    // 確認頁面有此番號
+    if (!html.includes(upperId) && !html.includes(lowerId)) {
+      debugLog('[JavDatabase] 頁面不含番號，跳過');
+      return null;
+    }
+
+    // 提取封面
+    const cover = extractCover(html, [
+      /<meta[^>]+property="og:image"[^>]+content="([^"]+)"/i,
+      /<img[^>]+src="([^"]+)"[^>]*class="[^"]*cover/i,
+      /<img[^>]+src="([^"]+)"[^>]*class="[^"]*poster/i,
+      /<img[^>]+src="([^"]+\.jpg[^"]*)"[^>]*alt="[^"]*cover/i
+    ]);
+
+    // 提取片名（Title: 欄位）
+    let title = null;
+    const titleFieldMatch = html.match(/Title:\s*<\/[^>]+>\s*([^<\n]{5,})/i) ||
+                            html.match(/Title:\s*([^\n<]{5,})/i);
+    if (titleFieldMatch?.[1]) {
+      title = titleFieldMatch[1].trim();
+    } else {
+      // 備用：og:title 或 h1，去掉番號前綴
+      const ogMatch = html.match(/<meta[^>]+property="og:title"[^>]+content="([^"]+)"/i) ||
+                      html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+      if (ogMatch?.[1]) {
+        title = ogMatch[1]
+          .replace(new RegExp('^' + upperId + '\\s*[-–]?\\s*', 'i'), '')
+          .replace(/\s*[-|]\s*JAV Database.*$/i, '')
+          .trim();
+      }
+    }
+
+    // 提取女優（從 /idols/ 連結）
+    const actors = [];
+    const idolRegex = /<a[^>]*href="[^"]*\/idols\/[^"]*"[^>]*>([^<]+)<\/a>/gi;
+    let m;
+    while ((m = idolRegex.exec(html)) !== null) {
+      const name = m[1].trim();
+      if (name && !actors.includes(name) && name.length > 1) {
+        actors.push(name);
+      }
+      if (actors.length >= 5) break;
+    }
+
+    // 提取片商（從 /studios/ 連結）
+    let studio = null;
+    const studioMatch = html.match(/<a[^>]*href="[^"]*\/studios\/[^"]*"[^>]*>([^<]+)<\/a>/i);
+    if (studioMatch?.[1]) {
+      studio = studioMatch[1].trim();
+    }
+
+    debugLog('[JavDatabase] 提取結果:', { id: upperId, title, cover: cover?.substring(0, 50), actors, studio });
+
+    if (!title && !actors.length && !studio) return null;
+
+    return { id: upperId, title, cover, actors, studio, source: 'javdatabase' };
+  } catch (e) {
+    if (isTimeoutError(e)) {
+      console.warn('[JavDatabase] 請求超時:', id);
+    } else {
+      console.error('[JavDatabase] fetch error:', e.message);
+    }
+    return null;
+  }
+}
+
+// ========== JavMost 數據源 ==========
+async function fetchJavmost(id) {
+  try {
+    const upperId = id.toUpperCase();
+    debugLog('[JavMost] 請求:', upperId);
+
+    const res = await fetchWithTimeout(
+      `https://www.javmost.ws/${encodeURIComponent(upperId)}/`,
+      getBrowserFetchOptions('https://www.javmost.ws/')
+    );
+    if (!res.ok) return null;
+
+    const html = await res.text();
+    debugLog('[JavMost] HTML 長度:', html.length);
+
+    // 確認頁面確實有此番號（避免跳轉到首頁或搜尋頁）
+    if (!html.includes(upperId) && !html.toLowerCase().includes(upperId.toLowerCase())) {
+      debugLog('[JavMost] 頁面不含番號，跳過');
+      return null;
+    }
+
+    // 提取封面（og:image）
+    let cover = extractCover(html, [
+      /<meta[^>]+property="og:image"[^>]+content="([^"]+)"/i,
+      /<img[^>]+src="([^"]+)"[^>]*class="[^"]*poster/i,
+      /<img[^>]+src="([^"]+)"[^>]*id="[^"]*cover/i,
+      /<img[^>]+src="([^"]+\.jpg[^"]*)"[^>]*class="[^"]*img-fluid/i
+    ]);
+
+    // 提取片名
+    let title = null;
+    const titlePatterns = [
+      /<meta[^>]+property="og:title"[^>]+content="([^"]+)"/i,
+      /<h2[^>]*>\s*([^<]{10,})\s*<\/h2>/i,
+      /<title>([^|<]+)/i
+    ];
+    for (const pattern of titlePatterns) {
+      const m = html.match(pattern);
+      if (m?.[1]) {
+        title = m[1].trim()
+          .replace(/\s*[-|]\s*Watch JAV.*$/i, '')
+          .replace(/\s*[-|]\s*JAVMOST.*$/i, '')
+          .replace(new RegExp('^' + upperId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*', 'i'), '')
+          .trim();
+        if (title && title.length > 3) break;
+      }
+    }
+
+    // 提取女優（英文名，從 /star/ 連結）
+    const actors = [];
+    const starRegex = /<a[^>]*href="[^"]*\/star\/([^"]+)"[^>]*>([^<]+)<\/a>/gi;
+    let m;
+    while ((m = starRegex.exec(html)) !== null) {
+      const name = decodeURIComponent(m[2]).trim();
+      if (name && !actors.includes(name) && name.length > 1) {
+        actors.push(name);
+      }
+      if (actors.length >= 5) break;
+    }
+
+    // 提取片商（Maker 欄位）
+    let studio = null;
+    const makerMatch = html.match(/Maker\s*<\/[^>]+>\s*<[^>]+>\s*([^<]+)/i) ||
+                       html.match(/Maker[^<]*<\/\w+>\s*([A-Za-z0-9 .!']+)</i) ||
+                       html.match(/maker[^:]*:\s*([^\n<,]+)/i);
+    if (makerMatch?.[1]) {
+      studio = makerMatch[1].trim();
+    }
+
+    debugLog('[JavMost] 提取結果:', { id: upperId, title, cover: cover?.substring(0, 50), actors, studio });
+
+    if (!title && !actors.length && !studio) return null;
+
+    return { id: upperId, title, cover, actors, studio, source: 'javmost' };
+  } catch (e) {
+    if (isTimeoutError(e)) {
+      console.warn('[JavMost] 請求超時:', id);
+    } else {
+      console.error('[JavMost] fetch error:', e.message);
+    }
+    return null;
+  }
+}
 
 // ========== MGStage (日本官方) 數據源 ==========
 async function fetchMgstage(id) {
