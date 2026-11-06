@@ -72,13 +72,16 @@
     <li>為確認番號是否有效，會於掃描時<strong>自動</strong>向番號資訊網站送出「存在性查詢」（僅傳送番號字串），有效者才加上視覺標記（黃色高亮）</li>
     <li>使用者滑鼠懸停於標記番號時，才進一步查詢並顯示完整詳細資料（片名、女優、封面等）</li>
   </ul>
-  <p>內容腳本<strong>不讀取、不傳送任何網頁內容、表單資料或個人資訊</strong>至任何伺服器。</p>
+  <p>內容腳本會讀取頁面文字以比對番號格式，但<strong>僅將偵測到的番號字串</strong>傳送至下列番號資訊網站；<strong>不傳送其他網頁內容、表單資料或任何個人資訊</strong>至任何伺服器。</p>
   <p>番號資訊查詢僅向以下網站發送請求（透過 Service Worker）：</p>
   <ul>
     <li><span class="badge">host</span> javdb.com / www.javdb.com</li>
     <li><span class="badge">host</span> javbus.com / www.javbus.com</li>
     <li><span class="badge">host</span> javlibrary.com / www.javlibrary.com</li>
     <li><span class="badge">host</span> mgstage.com / www.mgstage.com</li>
+    <li><span class="badge">host</span> 3xplanet.com / www.3xplanet.com</li>
+    <li><span class="badge">host</span> javdatabase.com / www.javdatabase.com</li>
+    <li><span class="badge">host</span> javmost.ws / www.javmost.ws</li>
   </ul>
 
   <h2>3. 本地快取</h2>
@@ -96,6 +99,9 @@
     <li>javbus.com</li>
     <li>javlibrary.com</li>
     <li>mgstage.com</li>
+    <li>3xplanet.com</li>
+    <li>javdatabase.com</li>
+    <li>javmost.ws</li>
   </ul>
   <p>這些請求僅包含番號字串，<strong>不包含任何個人識別資訊，且不會攜帶您在上述網站的登入 Cookie</strong>（以匿名方式查詢，避免使用者身分被關聯）。</p>
 

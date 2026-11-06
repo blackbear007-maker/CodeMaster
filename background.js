@@ -2002,17 +2002,5 @@ function extractMgstageActors(html) {
   return actors;
 }
 
-// Service Worker 啟動時執行一次自檢，方便診斷 background fetch 是否正常
-(async function selfTest() {
-  const testId = 'IPX-333';
-  debugLog('[Code] Service Worker 啟動自檢，測試番號:', testId);
-  try {
-    const result = await fetchCodeExists(testId);
-    debugLog('[Code] 自檢結果:', testId, result ? '成功' : '失敗', result);
-  } catch (e) {
-    console.error('[Code] 自檢發生異常:', e.message);
-  }
-})();
-
 })(); // IIFE 結束
 

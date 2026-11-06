@@ -91,7 +91,7 @@
 - ℹ️ content_scripts 維持 `<all_urls>`：核心功能需在任意網站偵測番號，故無法限縮；風險已由上述匿名查詢消除，並於隱私政策充分揭露
 
 ### v1.2.0 新增資料來源（2026-06-23）
-- ✅ 新增 javbooks.com host_permissions（頁面番號標記支援）
+- ✅ 新增 javbooks.com host_permissions（⚠️ 已於上架前審查移除：程式碼未使用該網域）
 - ✅ 新增 fetchJavmost()：英文片名、女優、片商（javmost.ws）
 - ✅ 新增 fetchJavdatabase()：完整英文資料（javdatabase.com）
 - ✅ 新增 fetchThreexplanet()：日文片名、女優、片商（3xplanet.com）
@@ -115,7 +115,7 @@
 
 - 僅存儲必要的快取資料在本地
 - 不收集或傳送任何個人資訊
-- 使用最小權限原則：Content Script 僅注入目標番號網站
+- 權限最小化：API 權限僅 `storage`；host_permissions 僅限 7 個實際查詢的番號資訊網站。Content Script 需在所有網站執行以偵測番號，但僅傳送番號字串
 - 定期清理過期快取
 - 詳細隱私政策請見 [privacy.html](privacy.html)
 

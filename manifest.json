@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "番號達人",
   "version": "1.2.0",
-  "description": "番號看得懂的人，自然會知道這個小工具的用途。",
+  "description": "在網頁上自動偵測成人影片番號，滑鼠懸停即顯示片名、片商、演員等公開資料。",
   "permissions": [
     "storage"
   ],
@@ -15,8 +15,6 @@
     "https://www.javlibrary.com/*",
     "https://mgstage.com/*",
     "https://www.mgstage.com/*",
-    "https://javbooks.com/*",
-    "https://www.javbooks.com/*",
     "https://javmost.ws/*",
     "https://www.javmost.ws/*",
     "https://javdatabase.com/*",
