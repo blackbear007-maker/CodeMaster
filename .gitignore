@@ -41,3 +41,8 @@ icons/icon.svg
 icons/icon128.png
 icons/icon16.png
 icons/icon48.png
+
+# Environment files
+.env
+.env.*
+!.env.example
